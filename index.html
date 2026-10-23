@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChemBond: The Chemical Fusion Game</title>
+  <style>
+    :root {
+      --bg-dark: #09111e;
+      --bg-panel: #111e34;
+      --bg-card: #172946;
+      --accent-blue: #00d2ff;
+      --accent-green: #00e676;
+      --accent-amber: #ffab00;
+      --accent-red: #ff5252;
+      --accent-purple: #b388ff;
+      --text-main: #eaf4ff;
+      --text-muted: #8da6c9;
+      --border: #243b61;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #132544 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* HEADER & STATS */
+    header {
+      background: rgba(17, 30, 52, 0.95);
+      border-bottom: 2px solid var(--border);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #fff, var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-pill span.val {
+      color: var(--accent-green);
+      font-family: monospace;
+      font-size: 15px;
+    }
+
+    /* NAVIGATION STEPPER */
+    .nav-tabs {
+      max-width: 1200px;
+      margin: 20px auto 10px;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .tab-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 12px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(0, 230, 118, 0.15));
+      border-color: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.25);
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 16px;
+    }
+
+    .step-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .step-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent-blue);
+    }
+
+    .panel-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* STEP 1: PERIODIC TABLE & CRUCIBLE */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .filter-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #001524;
+      border-color: var(--accent-blue);
+    }
+
+    .lab-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .lab-grid { grid-template-columns: 1fr; }
+      .nav-tabs { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .elements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+      gap: 10px;
+    }
+
+    .el-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      position: relative;
+      user-select: none;
+    }
+
+    .el-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-blue);
+    }
+
+    .el-card[data-cat="nonmetal"] { border-top: 4px solid #00e676; }
+    .el-card[data-cat="alkali"] { border-top: 4px solid #ff5252; }
+    .el-card[data-cat="transition"] { border-top: 4px solid #ffab00; }
+    .el-card[data-cat="metalloid"] { border-top: 4px solid #b388ff; }
+    .el-card[data-cat="halogen"] { border-top: 4px solid #00d2ff; }
+    .el-card[data-cat="noble"] { border-top: 4px solid #ff80ab; }
+
+    .el-num {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: left;
+      font-family: monospace;
+    }
+
+    .el-sym {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 2px 0;
+      font-family: monospace;
+    }
+
+    .el-name {
+      font-size: 11px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* CRUCIBLE SLOTS */
+    .crucible-box {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .slots-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin: 8px 0;
+    }
+
+    .slot {
+      width: 125px;
+      height: 135px;
+      border: 2px dashed var(--accent-blue);
+      border-radius: 16px;
+      background: rgba(0, 210, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .slot.filled {
+      border-style: solid;
+      background: rgba(0, 230, 118, 0.1);
+      border-color: var(--accent-green);
+    }
+
+    .slot-sym {
+      font-size: 32px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+
+    .slot-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .preview-banner {
+      background: var(--bg-card);
+      border-left: 4px solid var(--accent-blue);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-blue), #0077ff);
+      color: #fff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--accent-green), #00b248);
+      color: #041f10;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .info-item {
+      background: rgba(0,0,0,0.25);
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .info-item small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* STEP 2: SPECIFIC REACTION MINI-GAMES */
+    .quick-rx-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .rx-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .rx-chip.active {
+      background: var(--accent-green);
+      color: #001f0d;
+      border-color: var(--accent-green);
+    }
+
+    .why-box {
+      background: rgba(179, 136, 255, 0.12);
+      border: 1px solid var(--accent-purple);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 18px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .minigame-stage {
+      background: #0b1528;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      min-height: 310px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    /* Meters, Grids, and Controls for Step 2 */
+    .meter-track {
+      width: 100%;
+      max-width: 480px;
+      height: 28px;
+      background: #1b2c4c;
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid var(--border);
+    }
+
+    .meter-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(0, 230, 118, 0.35);
+      border-left: 2px solid var(--accent-green);
+      border-right: 2px solid var(--accent-green);
+    }
+
+    .meter-cursor {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 12px;
+      background: var(--accent-amber);
+      border-radius: 6px;
+      box-shadow: 0 0 10px var(--accent-amber);
+    }
+
+    .crystal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 68px);
+      gap: 10px;
+      justify-content: center;
+      margin: 10px auto;
+    }
+
+    .crystal-cell {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* STEP 3: 3D MOLECULE & KNOWLEDGE */
+    .knowledge-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 850px) {
+      .knowledge-layout { grid-template-columns: 1fr; }
+    }
+
+    #molCanvas {
+      width: 100%;
+      height: 320px;
+      background: radial-gradient(circle, #162a4a 0%, #091220 100%);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      cursor: grab;
+    }
+
+    #molCanvas:active {
+      cursor: grabbing;
+    }
+
+    /* STEP 4: TESTING LAB & CERTIFICATE */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .certificate-box {
+      background: #07111e;
+      border: 2px solid var(--accent-amber);
+      border-radius: 14px;
+      padding: 20px;
+      font-family: monospace;
+      max-width: 580px;
+      margin: 18px auto 0;
+      box-shadow: 0 0 25px rgba(255, 171, 0, 0.2);
+    }
+
+    /* MODAL FOR BONUS FAILED REACTION */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-panel);
+      border: 2px solid var(--accent-red);
+      border-radius: 18px;
+      max-width: 480px;
+      width: 100%;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 0 35px rgba(255, 82, 82, 0.4);
+    }
+
+    .compendium-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .comp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .comp-card.unlocked {
+      border-color: var(--accent-green);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      max-width: 340px;
+      accent-color: var(--accent-blue);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🧪</div>
+      <div>
+        <h1>ChemBond: The Chemical Fusion Game</h1>
+        <p>Belajar Kimia Sambil Bermain — Gabungkan Unsur, Temukan Keajaiban!</p>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill">🌱 Level: <span class="val" id="statLevel">1</span></div>
+      <div class="stat-pill">🏆 Poin: <span class="val" id="statScore">0</span></div>
+      <div class="stat-pill">📚 Senyawa: <span class="val" id="statComp">0/8</span></div>
+    </div>
+  </header>
+
+  <!-- STEP NAVIGATION -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchStep(1)">⚗️ STEP 1: Pemilihan Unsur</button>
+    <button class="tab-btn" onclick="switchStep(2)">🔬 STEP 2: Penggabungan Zat</button>
+    <button class="tab-btn" onclick="switchStep(3)">📖 STEP 3: Ruang Pengetahuan 3D</button>
+    <button class="tab-btn" onclick="switchStep(4)">🧫 STEP 4: Uji Kehebatan Zat</button>
+    <button class="tab-btn" onclick="switchStep(5)">🏆 Buku Senyawa & Skor</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- ==================== STEP 1: PEMILIHAN UNSUR ==================== -->
+    <section id="step-1" class="step-section active">
+      <div class="lab-grid">
+        <!-- Periodic Table Side -->
+        <div class="panel">
+          <div class="panel-title">⚛️ Tabel Periodik Laboratorium</div>
+          <p class="panel-sub">Klik unsur untuk memasukkannya ke dalam Wadah Reaksi (Crucible A & B).</p>
+
+          <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterElements('all', this)">Semua</button>
+            <button class="filter-btn" onclick="filterElements('nonmetal', this)">🟢 Nonlogam</button>
+            <button class="filter-btn" onclick="filterElements('alkali', this)">🔴 Logam Reaktif</button>
+            <button class="filter-btn" onclick="filterElements('transition', this)">🟠 Logam Transisi</button>
+            <button class="filter-btn" onclick="filterElements('metalloid', this)">🟣 Metaloid</button>
+            <button class="filter-btn" onclick="filterElements('halogen', this)">🔵 Halogen</button>
+            <button class="filter-btn" onclick="filterElements('noble', this)">🌸 Gas Mulia</button>
+          </div>
+
+          <div id="elementsGrid" class="elements-grid"></div>
+        </div>
+
+        <!-- Crucible & Info Side -->
+        <div class="crucible-box">
+          <div class="panel">
+            <div class="panel-title">🧪 Wadah Reaksi (Crucible Slot)</div>
+            <p class="panel-sub">Pilih 2 unsur untuk melihat kompatibilitas ikatan kimianya.</p>
+
+            <div class="slots-row">
+              <div id="slotA" class="slot" onclick="clearSlot('A')">
+                <div class="slot-sym" id="slotASym">+</div>
+                <div class="slot-label" id="slotALabel">Wadah A (Klik Unsur)</div>
+              </div>
+              <div style="font-size: 26px; font-weight: 800; color: var(--accent-blue);">+</div>
+              <div id="slotB" class="slot" onclick="clearSlot('B')">
+                <div class="slot-sym" id="slotBSym">+</div>
+                <div class="slot-label" id="slotBLabel">Wadah B (Klik Unsur)</div>
+              </div>
+            </div>
+
+            <div id="bondPreview" class="preview-banner" style="margin: 14px 0;">
+              💡 <strong>Preview Ikatan:</strong> Pilih 2 unsur dari tabel di samping untuk mendeteksi potensi reaksi kimia.
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-green" style="flex: 1;" onclick="processFusion()">⚗️ Gabungkan Unsur!</button>
+              <button class="btn btn-outline" onclick="giveHint()">💡 Petunjuk</button>
+              <button class="btn btn-outline" onclick="resetSlots()">🔄 Reset</button>
+            </div>
+          </div>
+
+          <!-- Element Detail Card -->
+          <div class="panel">
+            <div class="panel-title">📋 Kartu Info Unsur</div>
+            <div id="elementDetailBox" class="info-card">
+              Klik salah satu unsur di Tabel Periodik untuk melihat nomor atom, massa atom, konfigurasi elektron, dan sifat fisiknya.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== STEP 2: PROSES PENGGABUNGAN SPESIFIK ZAT ==================== -->
+    <section id="step-2" class="step-section">
+      <div class="panel">
+        <div class="panel-title">🔬 STEP 2 — Proses Penggabungan Spesifik Zat</div>
+        <p class="panel-sub">Setiap senyawa memiliki mekanisme penggabungan unik sesuai sifat ikatan dan kondisi reaksi kimianya!</p>
+
+        <!-- Quick Reaction Switcher -->
+        <div style="margin-bottom: 8px; font-size: 12px; color: var(--text-muted); font-weight: 700;">
+          ⚡ PILIH CEPAT REAKSI (Coba 8 Mekanisme Berbeda):
+        </div>
+        <div id="quickRxBar" class="quick-rx-bar"></div>
+
+        <!-- Scientific Rationale Box -->
+        <div id="whyMethodBox" class="why-box"></div>
+
+        <!-- Dynamic Mini-Game Stage -->
+        <div id="minigameStage" class="minigame-stage"></div>
+      </div>
+    </section>
+
+    <!-- ==================== STEP 3: PEMBELAJARAN SENYAWA & 3D ==================== -->
+    <section id="step-3" class="step-section">
+      <div class="knowledge-layout">
+        <!-- 3D Molecule Viewer -->
+        <div class="panel">
+          <div class="panel-title">🧬 Struktur 3D Molekul Interaktif (360°)</div>
+          <p class="panel-sub">Geser kanvas dengan mouse atau jari untuk memutar molekul 360 derajat.</p>
+
+          <canvas id="molCanvas" width="520" height="320"></canvas>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+            <button class="btn btn-outline" onclick="toggleRenderMode()">🔄 Mode: <span id="modeLabel">Ball & Stick</span></button>
+            <button class="btn btn-outline" onclick="toggleLabels()">📐 Label Sudut & Ikatan</button>
+            <button class="btn btn-outline" onclick="triggerBondAnimation()">🎬 Animasi Ikatan Slow-Mo</button>
+          </div>
+        </div>
+
+        <!-- Compound Details & Quiz -->
+        <div class="panel">
+          <div class="panel-title" id="knowTitle">📖 Identitas Senyawa</div>
+          <p class="panel-sub" id="knowSub">Memuat informasi senyawa...</p>
+
+          <div id="knowStats" class="info-grid" style="margin-bottom: 16px;"></div>
+
+          <div id="knowContext" class="preview-banner" style="margin-bottom: 16px; line-height: 1.5;"></div>
+
+          <!-- Quick Quiz -->
+          <div class="info-card">
+            <div style="font-weight: 700; color: var(--accent-amber); margin-bottom: 8px;">🧠 Kuis Pemahaman (+30 Poin)</div>
+            <p id="quizQuestion" style="margin-bottom: 10px; font-weight: 600;"></p>
+            <div id="quizOptions" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <p id="quizFeedback" style="margin-top: 10px; font-weight: 700; font-size: 13px;"></p>
+          </div>
+
+          <div style="margin-top: 16px; text-align: right;">
+            <button class="btn btn-green" onclick="switchStep(4)">Lanjut ke Uji Kehebatan Zat (Step 4) ➡️</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== STEP 4: UJI KEHEBATAN ZAT ==================== -->
+    <section id="step-4" class="step-section">
+      <div class="panel">
+        <div class="panel-title">🧫 STEP 4 — Laboratorium Uji Kehebatan Zat</div>
+        <p class="panel-sub">Buktikan sifat fisik, reaktivitas pH, dan aplikasi dunia nyata dari senyawa <strong id="testCompName">H₂O</strong>!</p>
+
+        <div class="test-grid">
+          <!-- 1. Uji Fisik -->
+          <div class="info-card">
+            <h3 style="color: var(--accent-blue); margin-bottom: 8px;">🌡️ 1. Uji Fisik & Titik Fase</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Geser suhu pemanas untuk mengamati perubahan wujud zat:</p>
+            <input type="range" id="tempSlider" min="-100" max="1800" value="25" oninput="updatePhysicalTest()" />
+            <div style="margin: 10px 0; font-weight: 700; font-size: 15px;">
+              Suhu: <span id="tempVal" style="color: var(--accent-amber);">25°C</span> — Wujud: <span id="phaseVal">Cair 💧</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button class="btn btn-outline" style="flex:1; font-size:12px;" onclick="runConductivityTest()">⚡ Uji Hantaran Listrik</button>
+              <button class="btn btn-outline" style="flex:1; font-size:12px;" onclick="runSolubilityTest()">💧 Uji Kelarutan Air</button>
+            </div>
+            <p id="physResult" style="margin-top: 10px; font-size: 12.5px; color: var(--accent-green);"></p>
+          </div>
+
+          <!-- 2. Uji Reaktivitas -->
+          <div class="info-card">
+            <h3 style="color: var(--accent-purple); margin-bottom: 8px;">⚗️ 2. Uji Reaktivitas & Indikator pH</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Teteskan indikator universal atau uji dengan nyala api:</p>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline" style="flex:1; font-size:12px;" onclick="runPhTest()">🧪 Teteskan Indikator pH</button>
+              <button class="btn btn-outline" style="flex:1; font-size:12px;" onclick="runFlameTest()">🔥 Uji Reaksi Api</button>
+            </div>
+            <div id="phBadge" style="margin-top: 14px; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); font-weight: 700; text-align: center;">
+              Klik tombol uji di atas untuk melihat reaksi!
+            </div>
+          </div>
+
+          <!-- 3. Simulasi Dunia Nyata -->
+          <div class="info-card">
+            <h3 style="color: var(--accent-green); margin-bottom: 8px;">🌍 3. Simulasi Aplikasi Dunia Nyata</h3>
+            <p id="simScenarioDesc" style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;"></p>
+            <button class="btn btn-green" style="width: 100%;" onclick="runRealWorldSim()">🚀 Terapkan Senyawa pada Skenario!</button>
+            <p id="simResultText" style="margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--accent-amber);"></p>
+          </div>
+        </div>
+
+        <!-- Laporan Akhir & Sertifikat -->
+        <div class="certificate-box">
+          <div style="text-align: center; font-weight: 800; color: var(--accent-amber); font-size: 16px; margin-bottom: 10px;">
+            ╔══════ LAPORAN RESMI SENYAWA KIMIA ══════╗
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+            <label style="font-size: 13px;">Nama Ilmuwan Muda:</label>
+            <input type="text" id="playerNameInput" value="Ilmuwan ChemBond" oninput="updateCertificate()" style="background:#11223d; border:1px solid var(--border); color:#fff; padding:6px 10px; border-radius:6px; font-family:monospace;" />
+          </div>
+          <div id="certContent" style="line-height: 1.7; font-size: 13.5px; color: #e2f1ff;"></div>
+          <div style="margin-top: 14px; text-align: center;">
+            <button class="btn btn-green" onclick="claimFinalReport()">🏅 Klaim Badge & Simpan ke Buku Senyawa (+75 Poin)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== STEP 5: COMPENDIUM (BUKU SENYAWA) ==================== -->
+    <section id="step-5" class="step-section">
+      <div class="panel">
+        <div class="panel-title">🏆 Buku Koleksi Senyawa (Compendium)</div>
+        <p class="panel-sub">Kumpulkan seluruh 8 senyawa utama dan temukan reaksi gagal unik untuk mencapai Level 5 (Master Kimia)!</p>
+        <div id="compendiumGrid" class="compendium-grid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: SCENE BONUS REAKSI GAGAL ==================== -->
+  <div id="failModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div id="failEmoji" style="font-size: 58px; margin-bottom: 8px;">💥</div>
+      <h2 id="failTitle" style="color: var(--accent-red); margin-bottom: 6px;">SCENE BONUS: Reaksi Gagal!</h2>
+      <p id="failCategory" style="font-size: 12px; font-weight: 700; color: var(--accent-amber); margin-bottom: 14px;"></p>
+      <div id="failDesc" style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; font-size: 13.5px; line-height: 1.5; margin-bottom: 16px;"></div>
+      <div style="font-size: 13px; color: var(--accent-green); font-weight: 700; margin-bottom: 16px;">
+        🏅 Achievement Bonus: +25 Poin ("Ahli Eksperimen Tak Kenal Takut")
+      </div>
+      <button class="btn" onclick="closeFailModal()">🔄 Kembali ke Laboratorium</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 1. DATABASE UNSUR TABEL PERIODIK ====================
+    const ELEMENTS = [
+      { sym: 'H', name: 'Hidrogen', num: 1, mass: '1.008', config: '1s¹', phase: 'Gas', cat: 'nonmetal', desc: 'Unsur paling ringan dan paling melimpah di alam semesta.' },
+      { sym: 'He', name: 'Helium', num: 2, mass: '4.002', config: '1s²', phase: 'Gas', cat: 'noble', desc: 'Gas mulia yang sangat stabil dan tidak mudah bereaksi.' },
+      { sym: 'C', name: 'Karbon', num: 6, mass: '12.011', config: '[He] 2s² 2p²', phase: 'Padat', cat: 'nonmetal', desc: 'Fondasi seluruh kehidupan organik, mampu membentuk 4 ikatan kovalen.' },
+      { sym: 'N', name: 'Nitrogen', num: 7, mass: '14.007', config: '[He] 2s² 2p³', phase: 'Gas', cat: 'nonmetal', desc: 'Menyusun 78% atmosfer Bumi, memiliki ikatan rangkap tiga yang sangat kuat.' },
+      { sym: 'O', name: 'Oksigen', num: 8, mass: '15.999', config: '[He] 2s² 2p⁴', phase: 'Gas', cat: 'nonmetal', desc: 'Oksidator kuat yang sangat penting bagi pernapasan dan pembakaran.' },
+      { sym: 'Ne', name: 'Neon', num: 10, mass: '20.180', config: '[He] 2s² 2p⁶', phase: 'Gas', cat: 'noble', desc: 'Gas mulia kulit penuh yang berpendar merah-oranye pada lampu tegangan tinggi.' },
+      { sym: 'Na', name: 'Natrium', num: 11, mass: '22.990', config: '[Ne] 3s¹', phase: 'Padat', cat: 'alkali', desc: 'Logam alkali lunak yang sangat reaktif dan meledak jika terkena air.' },
+      { sym: 'Si', name: 'Silikon', num: 14, mass: '28.085', config: '[Ne] 3s² 3p²', phase: 'Padat', cat: 'metalloid', desc: 'Metaloid semikonduktor utama penyusun chip komputer dan pasir kuarsa.' },
+      { sym: 'S', name: 'Sulfur', num: 16, mass: '32.06', config: '[Ne] 3s² 3p⁴', phase: 'Padat', cat: 'nonmetal', desc: 'Padatan kuning nonlogam yang banyak ditemukan di sekitar kawah gunung berapi.' },
+      { sym: 'Cl', name: 'Klorin', num: 17, mass: '35.45', config: '[Ne] 3s² 3p⁵', phase: 'Gas', cat: 'halogen', desc: 'Gas halogen kuning-kehijauan yang sangat elektronegatif dan haus 1 elektron.' },
+      { sym: 'K', name: 'Kalium', num: 19, mass: '39.098', config: '[Ar] 4s¹', phase: 'Padat', cat: 'alkali', desc: 'Logam alkali sangat reaktif yang menghasilkan nyala api ungu.' },
+      { sym: 'Ca', name: 'Kalsium', num: 20, mass: '40.078', config: '[Ar] 4s²', phase: 'Padat', cat: 'alkali', desc: 'Logam alkali tanah penyusun tulang, cangkang, dan batu kapur.' },
+      { sym: 'Fe', name: 'Besi', num: 26, mass: '55.845', config: '[Ar] 3d⁶ 4s²', phase: 'Padat', cat: 'transition', desc: 'Logam transisi magnetis yang menjadi tulang punggung konstruksi modern.' },
+      { sym: 'Au', name: 'Emas', num: 79, mass: '196.97', config: '[Xe] 4f¹⁴ 5d¹⁰ 6s¹', phase: 'Padat', cat: 'transition', desc: 'Logam mulia yang tahan korosi dan sangat sukar bereaksi dengan oksigen.' }
+    ];
+
+    // ==================== 2. DATABASE 8 REAKSI SPESIFIK ====================
+    const REACTION_DB = {
+      'H+O': {
+        id: 'H+O',
+        formula: 'H₂O',
+        name: 'Air (Dihidrogen Monoksida)',
+        iupac: 'Oxidane / Dihydrogen Monoxide',
+        molar: '18.015 g/mol',
+        phaseRoom: 'Cair',
+        mp: 0,
+        bp: 100,
+        ph: 7,
+        conductive: false,
+        soluble: 'Pelarut Universal',
+        badge: '💧 Master Hidrologi Molekuler',
+        methodName: '🧲 Pemasangan Orbital Kovalen & Sudut Bengkok',
+        whyMethod: 'Atom Oksigen membutuhkan 2 elektron tambahan, sedangkan masing-masing Hidrogen punya 1 elektron. Karena Oksigen memiliki 2 Pasangan Elektron Bebas (PEB) yang menolak ikatan dengan kuat, kedua atom H tidak lurus 180°, melainkan terdorong membentuk sudut bengkok spesifik 104.5°!',
+        context: 'Ditemukan di samudra, atmosfer, dan menyusun 60% tubuh manusia. Merupakan pelarut universal kehidupan.',
+        bondAngle: '104.5°',
+        bondLength: '0.96 Å',
+        atoms3D: [
+          { sym: 'O', color: '#ff5252', r: 26, x: 0, y: 0, z: 0 },
+          { sym: 'H', color: '#ffffff', r: 16, x: -75, y: 55, z: 15 },
+          { sym: 'H', color: '#ffffff', r: 16, x: 75, y: 55, z: -15 }
+        ],
+        quiz: {
+          q: 'Mengapa bentuk molekul H₂O melengkung (104.5°) dan tidak lurus?',
+          opts: ['Karena dorongan 2 Pasangan Elektron Bebas pada atom Oksigen', 'Karena Hidrogen bersifat logam magnetik', 'Karena suhu kamar terlalu dingin'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Mesin reaktor mengalami panas berlebih (Overheat). Gunakan kapasitas kalor tinggi H₂O sebagai pendingin!',
+        simSuccess: '✅ Berhasil! Air menyerap panas secara efektif tanpa terurai, suhu reaktor turun ke batas aman.'
+      },
+      'Cl+Na': {
+        id: 'Cl+Na',
+        formula: 'NaCl',
+        name: 'Garam Dapur (Natrium Klorida)',
+        iupac: 'Sodium Chloride',
+        molar: '58.44 g/mol',
+        phaseRoom: 'Padat Kristal',
+        mp: 801,
+        bp: 1465,
+        ph: 7,
+        conductive: true,
+        soluble: 'Sangat Larut dalam Air',
+        badge: '🧂 Arsitek Kristal Ionik',
+        methodName: '💎 Transfer Elektron Ionik & Susun Kisi Kristal 3x3',
+        whyMethod: 'Berbeda dengan air yang berbagi elektron, Natrium (logam) melepaskan 1 elektron valensinya secara penuh kepada Klorin (nonlogam) sehingga terbentuk ion Na⁺ dan Cl⁻. Gaya tarik elektrostatik antar ion berlawanan muatan ini menyusun struktur kisi kristal kubik berselang-seling!',
+        context: 'Ditemukan melimpah di air laut dan tambang garam batu. Digunakan sebagai elektrolit tubuh, bumbu, dan pengawet alami.',
+        bondAngle: '90.0° (Kisi Kubik)',
+        bondLength: '2.82 Å',
+        atoms3D: [
+          { sym: 'Na⁺', color: '#b388ff', r: 22, x: -55, y: 0, z: 0 },
+          { sym: 'Cl⁻', color: '#00e676', r: 30, x: 55, y: 0, z: 0 }
+        ],
+        quiz: {
+          q: 'Jenis ikatan apa yang terbentuk saat Natrium menyerahkan elektronnya ke Klorin?',
+          opts: ['Ikatan Kovalen Nonpolar', 'Ikatan Ionik (Elektrovalen)', 'Ikatan Logam Murni'],
+          ans: 1
+        },
+        simDesc: 'Skenario: Nelayan membutuhkan pengawet alami untuk ikan segar agar bakteri pembusuk mengalami osmosis.',
+        simSuccess: '✅ Berhasil! Kristal NaCl menarik kadar air dari mikroba melalui osmosis sehingga ikan awet berbulan-bulan.'
+      },
+      'C+O': {
+        id: 'C+O',
+        formula: 'CO₂',
+        name: 'Karbon Dioksida',
+        iupac: 'Carbon Dioxide',
+        molar: '44.01 g/mol',
+        phaseRoom: 'Gas',
+        mp: -78,
+        bp: -57,
+        ph: 5,
+        conductive: false,
+        soluble: 'Larut Sebagian (Asam Karbonat)',
+        badge: '🔥 Pengendali Pembakaran Sempurna',
+        methodName: '🔥 Rhythm Ignition — Suhu Pembakaran Sempurna',
+        whyMethod: 'Menggabungkan Karbon dan Oksigen membutuhkan energi aktivasi berupa penyulutan api pada suhu yang tepat (700°C–850°C) dengan suplai oksigen cukup. Jika suhu terlalu rendah atau oksigen kurang, reaksi justru menghasilkan gas beracun Karbon Monoksida (CO)!',
+        context: 'Digunakan tumbuhan untuk fotosintesis, pemberi sensasi soda pada minuman berkarbonasi, dan pemadam api ringan (APAR).',
+        bondAngle: '180.0° (Linear)',
+        bondLength: '1.16 Å',
+        atoms3D: [
+          { sym: 'C', color: '#90a4ae', r: 24, x: 0, y: 0, z: 0 },
+          { sym: 'O', color: '#ff5252', r: 25, x: -90, y: 0, z: 0 },
+          { sym: 'O', color: '#ff5252', r: 25, x: 90, y: 0, z: 0 }
+        ],
+        quiz: {
+          q: 'Apa yang terjadi jika Karbon dibakar pada suhu rendah dengan oksigen yang kurang?',
+          opts: ['Terbentuk berlian murni', 'Terbentuk jelaga dan gas beracun CO (Karbon Monoksida)', 'Reaksi membeku menjadi es'],
+          ans: 1
+        },
+        simDesc: 'Skenario: Kebakaran panel listrik laboratorium! Gunakan sifat gas CO₂ yang lebih berat dari udara untuk memadamkan api.',
+        simSuccess: '✅ Berhasil! Selimut gas CO₂ menyelimuti api dan memutus kontak oksigen tanpa merusak komponen listrik.'
+      },
+      'Cl+H': {
+        id: 'Cl+H',
+        formula: 'HCl',
+        name: 'Asam Klorida',
+        iupac: 'Hydrogen Chloride',
+        molar: '36.46 g/mol',
+        phaseRoom: 'Gas / Larutan Asam',
+        mp: -114,
+        bp: -85,
+        ph: 1,
+        conductive: true,
+        soluble: 'Sangat Larut (Ionisasi Penuh)',
+        badge: '🌀 Ahli Titrasi Presisi',
+        methodName: '🌀 Titrasi Buret & Magnetic Stirrer',
+        whyMethod: 'Pelarutan dan reaksi pembentukan asam kuat HCl melepaskan panas eksotermis tinggi. Dalam laboratorium, pencampuran dilakukan bertahap menggunakan Buret tetes demi tetes sambil diaduk dengan Magnetic Stirrer hingga mencapai volume stoikiometri tepat (48–52 mL)!',
+        context: 'Terdapat secara alami di dalam asam lambung manusia untuk mencerna makanan dan membunuh kuman penyakit.',
+        bondAngle: '180.0°',
+        bondLength: '1.27 Å',
+        atoms3D: [
+          { sym: 'H', color: '#ffffff', r: 16, x: -55, y: 0, z: 0 },
+          { sym: 'Cl', color: '#00e676', r: 30, x: 45, y: 0, z: 0 }
+        ],
+        quiz: {
+          q: 'Berapa kisaran pH larutan HCl pekat di dalam laboratorium?',
+          opts: ['pH 1–2 (Asam Kuat)', 'pH 7 (Netral)', 'pH 13–14 (Basa Kuat)'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Lempeng baja tertutup kerak karat oksida. Gunakan larutan HCl (proses pickling) untuk membersihkan karat!',
+        simSuccess: '✅ Berhasil! Asam Klorida melarutkan lapisan karat besi oksida hingga permukaan baja kembali mengilap.'
+      },
+      'Fe+S': {
+        id: 'Fe+S',
+        formula: 'FeS',
+        name: 'Besi(II) Sulfida',
+        iupac: 'Iron(II) Sulfide',
+        molar: '87.91 g/mol',
+        phaseRoom: 'Padat Hitam',
+        mp: 1194,
+        bp: 1800,
+        ph: 6,
+        conductive: false,
+        soluble: 'Tidak Larut dalam Air',
+        badge: '🌋 Pandai Besi Metalurgi',
+        methodName: '🌋 Peleburan Serbuk Padat dengan Pembakar Bunsen',
+        whyMethod: 'Serbuk Besi (Fe) dan serbuk Belerang (S) keduanya berwujud padat pada suhu ruang. Jika hanya diaduk, keduanya cuma menjadi campuran fisik yang masih bisa dipisahkan magnet. Untuk membentuk ikatan kimia FeS, campuran harus dipanaskan dengan api Bunsen di atas 600°C hingga melebur dan berpijar!',
+        context: 'Ditemukan di alam sebagai mineral makinit dan pirit ("emas palsu"). Digunakan dalam industri keramik dan metalurgi.',
+        bondAngle: '109.5° (Kisi Kristal)',
+        bondLength: '2.45 Å',
+        atoms3D: [
+          { sym: 'Fe', color: '#ffab00', r: 28, x: -50, y: 0, z: 0 },
+          { sym: 'S', color: '#ffee58', r: 26, x: 50, y: 0, z: 0 }
+        ],
+        quiz: {
+          q: 'Bagaimana cara membedakan campuran serbuk Fe+S biasa dengan senyawa FeS hasil pembakaran?',
+          opts: ['Senyawa FeS tidak lagi tertarik oleh magnet', 'Senyawa FeS berubah menjadi gas transparan', 'Senyawa FeS berbau harum'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Uji ketahanan magnetik! Dekatkan magnet kuat ke bongkahan FeS hasil peleburan untuk menguji kemurnian reaksi.',
+        simSuccess: '✅ Berhasil! Magnet sama sekali tidak menarik FeS—membuktikan Besi telah berikatan kimia sepenuhnya dengan Sulfur.'
+      },
+      'H+N': {
+        id: 'H+N',
+        formula: 'NH₃',
+        name: 'Amonia',
+        iupac: 'Azane / Ammonia',
+        molar: '17.031 g/mol',
+        phaseRoom: 'Gas',
+        mp: -77,
+        bp: -33,
+        ph: 11,
+        conductive: true,
+        soluble: 'Sangat Larut (Basa Lemah)',
+        badge: '⚙️ Insinyur Reaktor Haber-Bosch',
+        methodName: '⚙️ Reaktor Industri Haber-Bosch (Suhu, Tekanan & Katalis)',
+        whyMethod: 'Gas Nitrogen (N₂) memiliki ikatan rangkap tiga yang luar biasa kuat sehingga tidak mau bereaksi dengan Hidrogen pada suhu kamar. Proses Haber-Bosch memecahkan masalah ini dengan mengombinasikan 3 syarat sekaligus: Suhu ~450°C, Tekanan tinggi ~200 atm, dan Katalis Besi Berpori (Fe)!',
+        context: 'Bahan baku utama pupuk pertanian dunia yang menyelamatkan miliaran manusia dari krisis pangan.',
+        bondAngle: '107.0° (Piramida Trigonal)',
+        bondLength: '1.01 Å',
+        atoms3D: [
+          { sym: 'N', color: '#40c4ff', r: 26, x: 0, y: -25, z: 0 },
+          { sym: 'H', color: '#ffffff', r: 15, x: -65, y: 40, z: 30 },
+          { sym: 'H', color: '#ffffff', r: 15, x: 65, y: 40, z: 30 },
+          { sym: 'H', color: '#ffffff', r: 15, x: 0, y: 40, z: -65 }
+        ],
+        quiz: {
+          q: 'Mengapa proses Haber-Bosch wajib menggunakan katalis Besi (Fe)?',
+          opts: ['Untuk mempercepat pemutusan ikatan rangkap tiga N₂ tanpa harus memakai suhu ekstrem', 'Agar Amonia berubah warna menjadi biru', 'Untuk membekukan gas Hidrogen'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Lahan pertanian mengalami defisiensi unsur hara Nitrogen. Aplikasikan turunan NH₃ sebagai pupuk tanaman!',
+        simSuccess: '✅ Berhasil! Tanaman menyerap ion amonium dengan cepat, daun kembali hijau subur dan panen meningkat.'
+      },
+      'O+Si': {
+        id: 'O+Si',
+        formula: 'SiO₂',
+        name: 'Silikon Dioksida (Pasir Kuarsa)',
+        iupac: 'Silicon Dioxide',
+        molar: '60.08 g/mol',
+        phaseRoom: 'Padat Kristal Keras',
+        mp: 1713,
+        bp: 2950,
+        ph: 7,
+        conductive: false,
+        soluble: 'Tidak Larut dalam Air',
+        badge: '🏗️ Arsitek Jaringan Silika',
+        methodName: '🏗️ Polimerisasi Rantai Kovalen Raksasa (-Si-O-Si-O-)',
+        whyMethod: 'Tidak seperti CO₂ yang berupa molekul gas terpisah, atom Silikon membentuk jaringan kovalen raksasa 3 dimensi yang berulang tanpa putus dengan Oksigen (-Si-O-Si-O-). Itu sebabnya SiO₂ berwujud kristal padat super keras dengan titik leleh mencapai 1.713°C!',
+        context: 'Menyusun pasir pantai, batu kuarsa, bahan utama pembuatan kaca laboratorium, dan serat optik internet cepat.',
+        bondAngle: '109.5° (Tetrahedral)',
+        bondLength: '1.61 Å',
+        atoms3D: [
+          { sym: 'Si', color: '#b388ff', r: 26, x: 0, y: 0, z: 0 },
+          { sym: 'O', color: '#ff5252', r: 22, x: -85, y: -35, z: 0 },
+          { sym: 'O', color: '#ff5252', r: 22, x: 85, y: 35, z: 0 }
+        ],
+        quiz: {
+          q: 'Mengapa SiO₂ berwujud padat keras sedangkan CO₂ berwujud gas, padahal C dan Si satu golongan?',
+          opts: ['Karena SiO₂ membentuk jaringan ikatan kovalen raksasa yang saling menyambung', 'Karena Silikon adalah gas mulia', 'Karena Oksigen pada SiO₂ membeku'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Pabrik optik membutuhkan cetakan kaca tahan panas untuk gelas kimia laboratorium.',
+        simSuccess: '✅ Berhasil! Leburan SiO₂ dicetak menjadi kaca borosilikat transparan yang tahan suhu ekstrem.'
+      },
+      'Ca+O': {
+        id: 'Ca+O',
+        formula: 'CaO',
+        name: 'Kalsium Oksida (Kapur Tohor)',
+        iupac: 'Calcium Oxide',
+        molar: '56.08 g/mol',
+        phaseRoom: 'Padat Putih',
+        mp: 2572,
+        bp: 2850,
+        ph: 12,
+        conductive: true,
+        soluble: 'Bereaksi Eksotermis Menjadi Ca(OH)₂',
+        badge: '⚡ Teknisi Kalsinasi Termal',
+        methodName: '⚡ Penyusunan Sirkuit Energi Termal & Kalsinasi',
+        whyMethod: 'Pembentukan Kalsium Oksida melibatkan pelepasan dua elektron valensi Ca ke O dalam tungku energi tinggi. Di laboratorium modern, tungku kalsinasi membutuhkan aliran arus listrik tertutup yang stabil untuk memicu oksidasi permukaan logam Kalsium!',
+        context: 'Digunakan secara luas dalam pembuatan semen konstruksi, pengolahan baja, dan penetral tanah pertanian yang terlalu asam.',
+        bondAngle: '180.0° (Kisi Ionik)',
+        bondLength: '2.40 Å',
+        atoms3D: [
+          { sym: 'Ca²⁺', color: '#00d2ff', r: 28, x: -50, y: 0, z: 0 },
+          { sym: 'O²⁻', color: '#ff5252', r: 25, x: 50, y: 0, z: 0 }
+        ],
+        quiz: {
+          q: 'Apa fungsi utama CaO (Kapur Tohor) ketika ditaburkan pada lahan gambut yang asam?',
+          opts: ['Menaikkan pH tanah (menetralkan keasaman tanah)', 'Mengubah tanah menjadi pasir pantai', 'Membekukan air tanah'],
+          ans: 0
+        },
+        simDesc: 'Skenario: Danau bekas tambang mengalami keasaman tinggi (pH 3). Taburkan CaO untuk menetralkan pH air!',
+        simSuccess: '✅ Berhasil! CaO bereaksi membentuk basa yang menaikkan pH air kembali ke zona netral sehingga ekosistem pulih.'
+      }
+    };
+
+    // ==================== STATE PERMAINAN ====================
+    let slotA = null;
+    let slotB = null;
+    let currentReactionKey = 'H+O';
+    let score = 0;
+    let unlockedCompounds = new Set();
+    let failedDiscovered = new Set();
+
+    // Mini-game specific runtime variables
+    let mgState = {};
+    let rhythmInterval = null;
+
+    // 3D Viewer runtime variables
+    let rotX = 0.3;
+    let rotY = 0.5;
+    let isDragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let renderMode = 'ball-stick'; // or 'space-fill'
+    let showLabels = true;
+    let animProgress = 1;
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPeriodicTable('all');
+      renderQuickRxBar();
+      loadReactionToStep2('H+O');
+      loadReactionToStep3('H+O');
+      loadReactionToStep4('H+O');
+      renderCompendium();
+      init3DCanvas();
+    });
+
+    function addScore(pts) {
+      score += pts;
+      document.getElementById('statScore').textContent = score;
+      const lvl = Math.min(5, Math.floor(score / 180) + 1);
+      document.getElementById('statLevel').textContent = lvl;
+    }
+
+    function switchStep(stepNum) {
+      if (rhythmInterval) clearInterval(rhythmInterval);
+      document.querySelectorAll('.step-section').forEach((el, idx) => {
+        el.classList.toggle('active', idx + 1 === stepNum);
+      });
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === stepNum);
+      });
+      if (stepNum === 2) loadReactionToStep2(currentReactionKey);
+      if (stepNum === 3) {
+        loadReactionToStep3(currentReactionKey);
+        draw3DMolecule();
+      }
+      if (stepNum === 4) loadReactionToStep4(currentReactionKey);
+      if (stepNum === 5) renderCompendium();
+    }
+
+    // ==================== STEP 1 LOGIC ====================
+    function renderPeriodicTable(filterCat) {
+      const grid = document.getElementById('elementsGrid');
+      grid.innerHTML = '';
+      ELEMENTS.filter(el => filterCat === 'all' || el.cat === filterCat).forEach(el => {
+        const div = document.createElement('div');
+        div.className = 'el-card';
+        div.setAttribute('data-cat', el.cat);
+        div.innerHTML = `
+          <div class="el-num">${el.num}</div>
+          <div class="el-sym">${el.sym}</div>
+          <div class="el-name">${el.name}</div>
+        `;
+        div.onclick = () => selectElement(el);
+        grid.appendChild(div);
+      });
+    }
+
+    function filterElements(cat, btnEl) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderPeriodicTable(cat);
+    }
+
+    function selectElement(el) {
+      // Show element info
+      document.getElementById('elementDetailBox').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:17px; color:var(--accent-blue);">${el.name} (${el.sym})</strong>
+          <span style="background:rgba(0,210,255,0.15); padding:3px 8px; border-radius:6px; font-family:monospace;">No. Atom: ${el.num}</span>
+        </div>
+        <p style="margin-top:6px; color:var(--text-muted);">${el.desc}</p>
+        <div class="info-grid">
+          <div class="info-item"><small>Massa Atom</small><strong>${el.mass} u</strong></div>
+          <div class="info-item"><small>Konfigurasi Elektron</small><strong>${el.config}</strong></div>
+          <div class="info-item"><small>Wujud Suhu Ruang</small><strong>${el.phase}</strong></div>
+          <div class="info-item"><small>Golongan</small><strong style="text-transform:capitalize;">${el.cat}</strong></div>
+        </div>
+      `;
+
+      // Assign to slot A or B
+      if (!slotA) {
+        slotA = el;
+      } else if (!slotB) {
+        slotB = el;
+      } else {
+        slotA = el;
+        slotB = null;
+      }
+      updateSlotsUI();
+    }
+
+    function clearSlot(which) {
+      if (which === 'A') slotA = null;
+      if (which === 'B') slotB = null;
+      updateSlotsUI();
+    }
+
+    function resetSlots() {
+      slotA = null;
+      slotB = null;
+      updateSlotsUI();
+    }
+
+    function getSortedKey(sym1, sym2) {
+      return [sym1, sym2].sort().join('+');
+    }
+
+    function updateSlotsUI() {
+      const sA = document.getElementById('slotA');
+      const sB = document.getElementById('slotB');
+
+      if (slotA) {
+        sA.classList.add('filled');
+        document.getElementById('slotASym').textContent = slotA.sym;
+        document.getElementById('slotALabel').textContent = slotA.name;
+      } else {
+        sA.classList.remove('filled');
+        document.getElementById('slotASym').textContent = '+';
+        document.getElementById('slotALabel').textContent = 'Wadah A (Klik Unsur)';
+      }
+
+      if (slotB) {
+        sB.classList.add('filled');
+        document.getElementById('slotBSym').textContent = slotB.sym;
+        document.getElementById('slotBLabel').textContent = slotB.name;
+      } else {
+        sB.classList.remove('filled');
+        document.getElementById('slotBSym').textContent = '+';
+        document.getElementById('slotBLabel').textContent = 'Wadah B (Klik Unsur)';
+      }
+
+      const preview = document.getElementById('bondPreview');
+      if (slotA && slotB) {
+        const key = getSortedKey(slotA.sym, slotB.sym);
+        if (REACTION_DB[key]) {
+          preview.style.borderLeftColor = 'var(--accent-green)';
+          preview.innerHTML = `✅ <strong>Kompatibel!</strong> Kombinasi <strong>${slotA.sym} + ${slotB.sym}</strong> dapat membentuk senyawa <strong>${REACTION_DB[key].formula} (${REACTION_DB[key].name})</strong> via <em>${REACTION_DB[key].methodName}</em>.`;
+        } else {
+          preview.style.borderLeftColor = 'var(--accent-amber)';
+          preview.innerHTML = `⚠️ <strong>Peringatan Reaksi:</strong> Kombinasi <strong>${slotA.sym} + ${slotB.sym}</strong> tidak membentuk senyawa biner stabil. Klik <em>Gabungkan Unsur!</em> untuk melihat apa yang terjadi di laboratorium!`;
+        }
+      } else {
+        preview.style.borderLeftColor = 'var(--accent-blue)';
+        preview.innerHTML = `💡 <strong>Preview Ikatan:</strong> Pilih 2 unsur dari tabel di samping untuk mendeteksi potensi reaksi kimia.`;
+      }
+    }
+
+    function giveHint() {
+      const keys = Object.keys(REACTION_DB);
+      const unmade = keys.filter(k => !unlockedCompounds.has(k));
+      const targetKey = unmade.length > 0 ? unmade[0] : keys[Math.floor(Math.random() * keys.length)];
+      const [s1, s2] = targetKey.split('+');
+      slotA = ELEMENTS.find(e => e.sym === s1);
+      slotB = ELEMENTS.find(e => e.sym === s2);
+      updateSlotsUI();
+    }
+
+    function processFusion() {
+      if (!slotA || !slotB) {
+        alert('Pilih 2 unsur terlebih dahulu ke dalam Wadah A dan Wadah B!');
+        return;
+      }
+      const key = getSortedKey(slotA.sym, slotB.sym);
+      if (REACTION_DB[key]) {
+        currentReactionKey = key;
+        switchStep(2);
+      } else {
+        triggerFailScene(slotA, slotB, key);
+      }
+    }
+
+    // ==================== SCENE BONUS: REAKSI GAGAL ====================
+    function triggerFailScene(elA, elB, key) {
+      let emoji = '🫧';
+      let title = 'Tidak Bereaksi Sama Sekali!';
+      let cat = 'Kategori: Konfigurasi Stabil / Tolakan Antar-Atom';
+      let desc = `Atom <strong>${elA.name} (${elA.sym})</strong> dan <strong>${elB.name} (${elB.sym})</strong> saling menolak dan melayang pergi tanpa membentuk ikatan kimia.`;
+
+      if (elA.cat === 'noble' || elB.cat === 'noble') {
+        emoji = '🫧';
+        title = 'Gas Mulia Menolak Bereaksi!';
+        cat = 'Kategori: Oktet Penuh (Inert)';
+        desc = `Unsur Gas Mulia memiliki kulit elektron valensi yang sudah penuh dan sangat stabil. Pada suhu dan tekanan laboratorium normal, mereka tidak mau menerima ataupun melepas elektron!`;
+      } else if (elA.cat === 'alkali' && elB.cat === 'alkali') {
+        emoji = '💥';
+        title = 'Tolakan Sesama Logam Reaktif!';
+        cat = 'Kategori: Reaksi Keras / Sama-Sama Elektropositif';
+        desc = `Baik <strong>${elA.sym}</strong> maupun <strong>${elB.sym}</strong> sama-sama ingin membuang elektron valensi dan tidak ada yang mau menerima elektron. Mencampurkannya pada suhu tinggi justru memicu percikan logam reaktif!`;
+      } else if ((elA.sym === 'Cl' && elB.sym === 'N') || (elA.sym === 'N' && elB.sym === 'Cl')) {
+        emoji = '☢️';
+        title = 'Peringatan: Senyawa Eksplosif Berbahaya!';
+        cat = 'Kategori: Reaksi Berbahaya (NCl₃)';
+        desc = `Menggabungkan Nitrogen dan Klorin menghasilkan Nitrogen Triklorida yang sangat tidak stabil, beracun, dan dapat meledak hanya karena sentuhan cahaya!`;
+      } else if (elA.sym === 'Au' || elB.sym === 'Au') {
+        emoji = '🔒';
+        title = 'Logam Mulia Tahan Korosi!';
+        cat = 'Kategori: Butuh Kondisi Khusus (Aqua Regia)';
+        desc = `Emas (Au) adalah logam mulia dengan potensial reduksi tinggi sehingga tidak mempan dioksidasi oleh unsur biasa di laboratorium standar.`;
+      }
+
+      document.getElementById('failEmoji').textContent = emoji;
+      document.getElementById('failTitle').textContent = title;
+      document.getElementById('failCategory').textContent = cat;
+      document.getElementById('failDesc').innerHTML = desc;
+      document.getElementById('failModal').classList.add('open');
+
+      if (!failedDiscovered.has(key)) {
+        failedDiscovered.add(key);
+        addScore(25);
+      }
+    }
+
+    function closeFailModal() {
+      document.getElementById('failModal').classList.remove('open');
+    }
+
+    // ==================== STEP 2: 8 MEKANISME PENGGABUNGAN SPESIFIK ====================
+    function renderQuickRxBar() {
+      const bar = document.getElementById('quickRxBar');
+      bar.innerHTML = '';
+      Object.values(REACTION_DB).forEach(rx => {
+        const btn = document.createElement('button');
+        btn.className = 'rx-chip' + (rx.id === currentReactionKey ? ' active' : '');
+        btn.textContent = `${rx.formula} (${rx.id.replace('+', ' + ')})`;
+        btn.onclick = () => {
+          currentReactionKey = rx.id;
+          loadReactionToStep2(rx.id);
+        };
+        bar.appendChild(btn);
+      });
+    }
+
+    function loadReactionToStep2(key) {
+      if (rhythmInterval) clearInterval(rhythmInterval);
+      renderQuickRxBar();
+      const rx = REACTION_DB[key];
+      document.getElementById('whyMethodBox').innerHTML = `
+        <div style="font-weight:800; color:var(--accent-purple); margin-bottom:4px;">
+          🔬 Mengapa ${rx.formula} (${rx.name}) Menggunakan Metode "${rx.methodName}"?
+        </div>
+        <div>${rx.whyMethod}</div>
+      `;
+
+      const stage = document.getElementById('minigameStage');
+      stage.innerHTML = '';
+
+      // Route to specific reaction mini-game
+      if (key === 'H+O') buildGameH2O(stage, rx);
+      else if (key === 'Cl+Na') buildGameNaCl(stage, rx);
+      else if (key === 'C+O') buildGameCO2(stage, rx);
+      else if (key === 'Cl+H') buildGameHCl(stage, rx);
+      else if (key === 'Fe+S') buildGameFeS(stage, rx);
+      else if (key === 'H+N') buildGameNH3(stage, rx);
+      else if (key === 'O+Si') buildGameSiO2(stage, rx);
+      else if (key === 'Ca+O') buildGameCaO(stage, rx);
+    }
+
+    function finishMiniGame(rx, stars = 3) {
+      if (rhythmInterval) clearInterval(rhythmInterval);
+      const isNew = !unlockedCompounds.has(rx.id);
+      unlockedCompounds.add(rx.id);
+      document.getElementById('statComp').textContent = `${unlockedCompounds.size}/8`;
+      addScore(isNew ? 150 : 50);
+
+      const stage = document.getElementById('minigameStage');
+      stage.innerHTML = `
+        <div style="font-size: 54px;">🎉🧪</div>
+        <h2 style="color: var(--accent-green);">Senyawa ${rx.formula} (${rx.name}) Berhasil Disintesis!</h2>
+        <div style="font-size: 24px; letter-spacing: 4px;">${'⭐'.repeat(stars)}</div>
+        <p style="color: var(--text-muted); max-width: 460px;">
+          Kamu berhasil menguasai mekanisme <strong>${rx.methodName}</strong> dan mendapatkan <strong>+${isNew ? 150 : 50} Poin</strong>!
+        </p>
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <button class="btn btn-green" onclick="switchStep(3)">📖 Masuk ke Ruang Pengetahuan 3D (Step 3) ➡️</button>
+          <button class="btn btn-outline" onclick="loadReactionToStep2('${rx.id}')">🔄 Mainkan Ulang Reaksi Ini</button>
+        </div>
+      `;
+    }
+
+    // --- 1. H2O: Orbital Electron Pairing & Bond Angle ---
+    function buildGameH2O(stage, rx) {
+      mgState = { h1: false, h2: false, angle: 180 };
+      stage.innerHTML = `
+        <h3>🧲 Pasangkan Elektron Hidrogen & Atur Sudut Ikatan H₂O</h3>
+        <p style="font-size:13px; color:var(--text-muted);">1. Klik kedua atom Hidrogen untuk berbagi elektron dengan Oksigen. 2. Geser sudut ikatan ke <strong>104.5°</strong>!</p>
+        <div style="display:flex; gap:20px; align-items:center; justify-content:center; margin:10px 0;">
+          <button id="btnH1" class="btn btn-outline" onclick="dockH(1)">⚪ Pasang H Pertama (1e⁻)</button>
+          <div style="width:90px; height:90px; border-radius:50%; background:#ff5252; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; box-shadow:0 0 20px rgba(255,82,82,0.5);">
+            Oksigen<small style="font-size:11px;">6 Valensi</small>
+          </div>
+          <button id="btnH2" class="btn btn-outline" onclick="dockH(2)">⚪ Pasang H Kedua (1e⁻)</button>
+        </div>
+        <div style="width:100%; max-width:360px;">
+          <label style="font-size:13px; font-weight:700;">Sudut Ikatan H–O–H: <span id="h2oAngleVal" style="color:var(--accent-amber);">180.0°</span> (Target: 104.5°)</label><br/>
+          <input type="range" min="90" max="180" step="0.5" value="180" oninput="updateH2OAngle(this.value)" style="margin-top:8px;" />
+        </div>
+        <button class="btn btn-green" onclick="verifyH2O()">✅ Kunci Struktur Kovalen H₂O</button>
+      `;
+    }
+    function dockH(num) {
+      mgState['h' + num] = true;
+      const btn = document.getElementById('btnH' + num);
+      btn.textContent = '✅ H Terpasang!';
+      btn.style.borderColor = 'var(--accent-green)';
+    }
+    function updateH2OAngle(val) {
+      mgState.angle = parseFloat(val);
+      document.getElementById('h2oAngleVal').textContent = mgState.angle.toFixed(1) + '°';
+    }
+    function verifyH2O() {
+      if (!mgState.h1 || !mgState.h2) {
+        alert('Pasangkan kedua atom Hidrogen terlebih dahulu!');
+        return;
+      }
+      if (Math.abs(mgState.angle - 104.5) <= 2.5) {
+        finishMiniGame(REACTION_DB['H+O'], 3);
+      } else {
+        alert(`Sudut ${mgState.angle}° belum stabil karena tolakan Pasangan Elektron Bebas Oksigen! Geser mendekati 104.5°.`);
+      }
+    }
+
+    // --- 2. NaCl: Ionic Transfer + 3x3 Crystal Lattice ---
+    function buildGameNaCl(stage, rx) {
+      mgState = { transferred: false, grid: Array(9).fill('') };
+      stage.innerHTML = `
+        <h3>💎 Tahap 1: Transfer Elektron Valensi (Na → Cl)</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Natrium memiliki 1 elektron terluar yang harus diserahkan ke Klorin agar keduanya mencapai aturan oktet.</p>
+        <div id="naclStage1" style="display:flex; gap:24px; align-items:center;">
+          <div style="padding:16px; border-radius:12px; background:var(--bg-card);"><strong>Na</strong> (2, 8, 1)</div>
+          <button class="btn btn-green" onclick="transferNaElectron()">⚡ Lempar 1 Elektron ke Cl ➡️</button>
+          <div style="padding:16px; border-radius:12px; background:var(--bg-card);"><strong>Cl</strong> (2, 8, 7)</div>
+        </div>
+        <div id="naclStage2" style="display:none; width:100%;">
+          <h4 style="color:var(--accent-green); margin-bottom:6px;">✅ Ion Na⁺ dan Cl⁻ Terbentuk! Sekarang Susun Kisi Kristal 3x3 Berselang-seling:</h4>
+          <p style="font-size:12px; color:var(--text-muted);">Klik kotak untuk mengisi pola selang-seling: <strong>[+] [-] [+] / [-] [+] [-] / [+] [-] [+]</strong></p>
+          <div class="crystal-grid" id="naclGrid"></div>
+        </div>
+      `;
+    }
+    function transferNaElectron() {
+      document.getElementById('naclStage1').style.display = 'none';
+      const s2 = document.getElementById('naclStage2');
+      s2.style.display = 'block';
+      const target = ['+', '-', '+', '-', '+', '-', '+', '-', '+'];
+      const g = document.getElementById('naclGrid');
+      g.innerHTML = '';
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'crystal-cell';
+        cell.textContent = '?';
+        cell.onclick = () => {
+          mgState.grid[i] = mgState.grid[i] === '+' ? '-' : '+';
+          cell.textContent = mgState.grid[i] === '+' ? 'Na⁺' : 'Cl⁻';
+          cell.style.background = mgState.grid[i] === '+' ? '#5e35b1' : '#00897b';
+          if (mgState.grid.every((v, idx) => v === target[idx])) {
+            setTimeout(() => finishMiniGame(REACTION_DB['Cl+Na'], 3), 250);
+          }
+        };
+        g.appendChild(cell);
+      }
+    }
+
+    // --- 3. CO2: Combustion Rhythm Ignition ---
+    function buildGameCO2(stage, rx) {
+      mgState = { pos: 10, dir: 2.8, hits: 0 };
+      stage.innerHTML = `
+        <h3>🔥 Rhythm Ignition — Jaga Suhu Pembakaran Sempurna (700°C – 850°C)</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Klik tombol <strong>Sulut Oksigen!</strong> tepat saat indikator berada di zona hijau sebanyak <strong>3 kali</strong> agar tidak timbul jelaga CO!</p>
+        <div class="meter-track">
+          <div class="meter-zone" style="left: 55%; width: 22%;"></div>
+          <div id="co2Cursor" class="meter-cursor" style="left: 10%;"></div>
+        </div>
+        <div style="font-weight:700;">Progres Pembakaran Sempurna: <span id="co2Hits" style="color:var(--accent-green);">0 / 3</span></div>
+        <button class="btn btn-green" onclick="hitCO2Rhythm()">🔥 Sulut Oksigen Sekarang!</button>
+      `;
+      rhythmInterval = setInterval(() => {
+        mgState.pos += mgState.dir;
+        if (mgState.pos >= 96 || mgState.pos <= 2) mgState.dir *= -1;
+        const c = document.getElementById('co2Cursor');
+        if (c) c.style.left = mgState.pos + '%';
+      }, 25);
+    }
+    function hitCO2Rhythm() {
+      if (mgState.pos >= 53 && mgState.pos <= 78) {
+        mgState.hits++;
+        document.getElementById('co2Hits').textContent = `${mgState.hits} / 3`;
+        if (mgState.hits >= 3) finishMiniGame(REACTION_DB['C+O'], 3);
+      } else {
+        alert('Timing meleset! Suhu tidak pas memicu jelaga Karbon Monoksida (CO). Coba bidik zona hijau!');
+      }
+    }
+
+    // --- 4. HCl: Titration & Magnetic Stirrer ---
+    function buildGameHCl(stage, rx) {
+      mgState = { stirrer: false, vol: 0 };
+      stage.innerHTML = `
+        <h3>🌀 Simulator Titrasi Buret & Magnetic Stirrer</h3>
+        <p style="font-size:13px; color:var(--text-muted);">1. Nyalakan <strong>Magnetic Stirrer</strong>. 2. Teteskan larutan hingga mencapai titik ekuivalen <strong>(48 – 52 mL)</strong>!</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+          <button id="stirBtn" class="btn btn-outline" onclick="toggleStirrer()">🧲 Magnetic Stirrer: OFF</button>
+          <button class="btn btn-outline" onclick="addDrop(10)">💧 +10 mL Cepat</button>
+          <button class="btn btn-outline" onclick="addDrop(2)">💧 +2 mL Presisi</button>
+        </div>
+        <div style="font-size:20px; font-weight:800; font-family:monospace;">
+          Volume Buret: <span id="hclVol" style="color:var(--accent-blue);">0</span> / 50 mL
+        </div>
+        <button class="btn btn-green" onclick="verifyHCl()">✅ Hentikan Keran Buret & Cek Larutan</button>
+      `;
+    }
+    function toggleStirrer() {
+      mgState.stirrer = !mgState.stirrer;
+      const b = document.getElementById('stirBtn');
+      b.textContent = `🧲 Magnetic Stirrer: ${mgState.stirrer ? 'ON (Berputar)' : 'OFF'}`;
+      b.style.borderColor = mgState.stirrer ? 'var(--accent-green)' : 'var(--border)';
+    }
+    function addDrop(amount) {
+      if (!mgState.stirrer) {
+        alert('Nyalakan Magnetic Stirrer terlebih dahulu agar panas pelarutan HCl merata!');
+        return;
+      }
+      mgState.vol = Math.min(70, mgState.vol + amount);
+      document.getElementById('hclVol').textContent = mgState.vol;
+    }
+    function verifyHCl() {
+      if (mgState.vol >= 48 && mgState.vol <= 52) {
+        finishMiniGame(REACTION_DB['Cl+H'], 3);
+      } else {
+        alert(`Volume saat ini ${mgState.vol} mL. Harus berada di rentang 48–52 mL! Klik Mainkan Ulang jika kelebihan.`);
+      }
+    }
+
+    // --- 5. FeS: Bunsen Burner Smelting ---
+    function buildGameFeS(stage, rx) {
+      mgState = { temp: 100, progress: 0 };
+      stage.innerHTML = `
+        <h3>🌋 Peleburan Serbuk Besi & Belerang (Bunsen Burner)</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Pompa api pembakar Bunsen berulang-ulang agar suhu serbuk padat bertahan di atas <strong>600°C</strong> hingga melebur 100%!</p>
+        <div style="font-size:18px; font-weight:800;">
+          Suhu Crucible: <span id="fesTemp" style="color:var(--accent-amber);">100°C</span> | Leburan: <span id="fesProg" style="color:var(--accent-green);">0%</span>
+        </div>
+        <button class="btn btn-green" style="font-size:16px; padding:14px 28px;" onclick="pumpBunsen()">🔥 Pompa Api Bunsen (+140°C)</button>
+      `;
+      rhythmInterval = setInterval(() => {
+        mgState.temp = Math.max(25, mgState.temp - 25);
+        if (mgState.temp >= 600) {
+          mgState.progress = Math.min(100, mgState.progress + 12);
+        }
+        const tEl = document.getElementById('fesTemp');
+        const pEl = document.getElementById('fesProg');
+        if (tEl && pEl) {
+          tEl.textContent = mgState.temp + '°C';
+          pEl.textContent = mgState.progress + '%';
+        }
+        if (mgState.progress >= 100) {
+          finishMiniGame(REACTION_DB['Fe+S'], 3);
+        }
+      }, 300);
+    }
+    function pumpBunsen() {
+      mgState.temp = Math.min(1100, mgState.temp + 140);
+    }
+
+    // --- 6. NH3: Haber-Bosch Reactor Control ---
+    function buildGameNH3(stage, rx) {
+      mgState = { temp: 200, press: 50, cat: false };
+      stage.innerHTML = `
+        <h3>⚙️ Panel Kontrol Reaktor Industri Haber-Bosch (N₂ + 3H₂ ⇌ 2NH₃)</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Atur ketiga parameter kesetimbangan industri agar gas Nitrogen & Hidrogen bereaksi:</p>
+        <div style="width:100%; max-width:400px; text-align:left; display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label>1. Suhu Reaktor: <strong id="nh3T">200°C</strong> (Target: 420°C – 480°C)</label>
+            <input type="range" min="100" max="700" value="200" oninput="mgState.temp=parseInt(this.value); document.getElementById('nh3T').textContent=this.value+'°C';" />
+          </div>
+          <div>
+            <label>2. Tekanan Kompresor: <strong id="nh3P">50 atm</strong> (Target: 180 – 220 atm)</label>
+            <input type="range" min="10" max="350" value="50" oninput="mgState.press=parseInt(this.value); document.getElementById('nh3P').textContent=this.value+' atm';" />
+          </div>
+          <button id="nh3CatBtn" class="btn btn-outline" onclick="toggleFeCat()">🧱 3. Katalis Besi Berpori (Fe): BELUM AKTIF</button>
+        </div>
+        <button class="btn btn-green" onclick="verifyNH3()">🚀 Jalankan Sintesis Haber-Bosch</button>
+      `;
+    }
+    function toggleFeCat() {
+      mgState.cat = !mgState.cat;
+      const b = document.getElementById('nh3CatBtn');
+      b.textContent = `🧱 3. Katalis Besi Berpori (Fe): ${mgState.cat ? 'AKTIF ✅' : 'BELUM AKTIF'}`;
+      b.style.borderColor = mgState.cat ? 'var(--accent-green)' : 'var(--border)';
+    }
+    function verifyNH3() {
+      if (mgState.temp >= 420 && mgState.temp <= 480 && mgState.press >= 180 && mgState.press <= 220 && mgState.cat) {
+        finishMiniGame(REACTION_DB['H+N'], 3);
+      } else {
+        alert('Kondisi Haber-Bosch belum tepat! Pastikan Suhu 420–480°C, Tekanan 180–220 atm, dan Katalis Besi (Fe) sudah AKTIF.');
+      }
+    }
+
+    // --- 7. SiO2: Silica Network Polymerization ---
+    function buildGameSiO2(stage, rx) {
+      mgState = { chain: [] };
+      stage.innerHTML = `
+        <h3>🏗️ Rangkai Polimer Jaringan Silika Kuarsa (-Si-O-Si-O-Si-O-)</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Klik tombol monomer secara bergantian untuk merangkai 6 mata rantai kovalen raksasa <strong>Si → O → Si → O → Si → O</strong>:</p>
+        <div id="sio2ChainBox" style="padding:14px 20px; background:var(--bg-card); border-radius:10px; font-family:monospace; font-size:20px; font-weight:800; min-width:280px;">
+          [ Kosong ]
+        </div>
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-outline" onclick="pushSilica('Si')">🟣 + Tambah Atom Si</button>
+          <button class="btn btn-outline" onclick="pushSilica('O')">🔴 + Tambah Atom O</button>
+        </div>
+      `;
+    }
+    function pushSilica(sym) {
+      const target = ['Si', 'O', 'Si', 'O', 'Si', 'O'];
+      const nextIdx = mgState.chain.length;
+      if (sym === target[nextIdx]) {
+        mgState.chain.push(sym);
+        document.getElementById('sio2ChainBox').textContent = mgState.chain.join(' — ');
+        if (mgState.chain.length === 6) {
+          setTimeout(() => finishMiniGame(REACTION_DB['O+Si'], 3), 250);
+        }
+      } else {
+        alert(`Urutan ikatan harus berselang-seling! Atom berikutnya yang dibutuhkan adalah ${target[nextIdx]}.`);
+      }
+    }
+
+    // --- 8. CaO: Calcination Energy Circuit ---
+    function buildGameCaO(stage, rx) {
+      mgState = { wires: [1, 0, 1, 0, 1, 0] };
+      stage.innerHTML = `
+        <h3>⚡ Sirkuit Energi Tungku Kalsinasi CaO</h3>
+        <p style="font-size:13px; color:var(--text-muted);">Klik seluruh keping kabel vertikal <strong>[ ┃ ]</strong> agar sejajar menjadi horizontal <strong>[ ━━ ]</strong> dan mengalirkan arus ke reaktor!</p>
+        <div id="caoGrid" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;"></div>
+      `;
+      renderCaOWires();
+    }
+    function renderCaOWires() {
+      const box = document.getElementById('caoGrid');
+      box.innerHTML = '';
+      mgState.wires.forEach((w, idx) => {
+        const b = document.createElement('button');
+        b.className = 'crystal-cell';
+        b.style.borderColor = w === 0 ? 'var(--accent-green)' : 'var(--accent-amber)';
+        b.textContent = w === 0 ? '━━' : '┃';
+        b.onclick = () => {
+          mgState.wires[idx] = mgState.wires[idx] === 0 ? 1 : 0;
+          renderCaOWires();
+          if (mgState.wires.every(v => v === 0)) {
+            setTimeout(() => finishMiniGame(REACTION_DB['Ca+O'], 3), 250);
+          }
+        };
+        box.appendChild(b);
+      });
+    }
+
+    // ==================== STEP 3: RUANG PENGETAHUAN & 3D CANVAS ====================
+    function loadReactionToStep3(key) {
+      const rx = REACTION_DB[key];
+      document.getElementById('knowTitle').textContent = `📖 ${rx.formula} — ${rx.name}`;
+      document.getElementById('knowSub').textContent = `Nama IUPAC: ${rx.iupac}`;
+
+      document.getElementById('knowStats').innerHTML = `
+        <div class="info-item"><small>Rumus Kimia</small><strong>${rx.formula}</strong></div>
+        <div class="info-item"><small>Massa Molar</small><strong>${rx.molar}</strong></div>
+        <div class="info-item"><small>Fase Suhu Kamar</small><strong>${rx.phaseRoom}</strong></div>
+        <div class="info-item"><small>Sudut & Panjang Ikatan</small><strong>${rx.bondAngle} | ${rx.bondLength}</strong></div>
+      `;
+
+      document.getElementById('knowContext').innerHTML = `
+        🌍 <strong>Konteks Dunia Nyata:</strong> ${rx.context}
+      `;
+
+      // Quiz setup
+      document.getElementById('quizQuestion').textContent = rx.quiz.q;
+      document.getElementById('quizFeedback').textContent = '';
+      const optsBox = document.getElementById('quizOptions');
+      optsBox.innerHTML = '';
+      rx.quiz.opts.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline';
+        btn.style.justifyContent = 'flex-start';
+        btn.style.textAlign = 'left';
+        btn.textContent = optText;
+        btn.onclick = () => {
+          const fb = document.getElementById('quizFeedback');
+          if (idx === rx.quiz.ans) {
+            fb.style.color = 'var(--accent-green)';
+            fb.textContent = '✅ Jawaban Tepat! Kamu mendapatkan +30 Poin Pemahaman.';
+            addScore(30);
+          } else {
+            fb.style.color = 'var(--accent-red)';
+            fb.textContent = '❌ Kurang tepat, coba baca kembali penjelasan konsep ikatan senyawa ini!';
+          }
+        };
+        optsBox.appendChild(btn);
+      });
+    }
+
+    function init3DCanvas() {
+      const canvas = document.getElementById('molCanvas');
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      });
+      window.addEventListener('mouseup', () => isDragging = false);
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        rotY += (e.clientX - lastMouseX) * 0.012;
+        rotX += (e.clientY - lastMouseY) * 0.012;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        draw3DMolecule();
+      });
+
+      // Touch support
+      canvas.addEventListener('touchstart', e => {
+        isDragging = true;
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+      });
+      canvas.addEventListener('touchend', () => isDragging = false);
+      canvas.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        rotY += (e.touches[0].clientX - lastMouseX) * 0.012;
+        rotX += (e.touches[0].clientY - lastMouseY) * 0.012;
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+        draw3DMolecule();
+      });
+
+      draw3DMolecule();
+    }
+
+    function toggleRenderMode() {
+      renderMode = renderMode === 'ball-stick' ? 'space-fill' : 'ball-stick';
+      document.getElementById('modeLabel').textContent = renderMode === 'ball-stick' ? 'Ball & Stick' : 'Space-Fill';
+      draw3DMolecule();
+    }
+
+    function toggleLabels() {
+      showLabels = !showLabels;
+      draw3DMolecule();
+    }
+
+    function triggerBondAnimation() {
+      animProgress = 2.4;
+      const timer = setInterval(() => {
+        animProgress -= 0.08;
+        if (animProgress <= 1) {
+          animProgress = 1;
+          clearInterval(timer);
+        }
+        draw3DMolecule();
+      }, 30);
+    }
+
+    function draw3DMolecule() {
+      const canvas = document.getElementById('molCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const rx = REACTION_DB[currentReactionKey];
+      const cx = w / 2;
+      const cy = h / 2;
+
+      // Project 3D coordinates
+      const projected = rx.atoms3D.map(a => {
+        let x = a.x * animProgress;
+        let y = a.y * animProgress;
+        let z = a.z * animProgress;
+
+        // Rotate Y
+        let x1 = x * Math.cos(rotY) - z * Math.sin(rotY);
+        let z1 = z * Math.cos(rotY) + x * Math.sin(rotY);
+
+        // Rotate X
+        let y2 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+        let z2 = z1 * Math.cos(rotX) + y * Math.sin(rotX);
+
+        return { ...a, px: cx + x1, py: cy + y2, pz: z2 };
+      });
+
+      // Draw bonds from atom 0 to others
+      if (renderMode === 'ball-stick' && projected.length > 1) {
+        const centerAtom = projected[0];
+        for (let i = 1; i < projected.length; i++) {
+          ctx.beginPath();
+          ctx.moveTo(centerAtom.px, centerAtom.py);
+          ctx.lineTo(projected[i].px, projected[i].py);
+          ctx.strokeStyle = 'rgba(0, 210, 255, 0.75)';
+          ctx.lineWidth = 8;
+          ctx.stroke();
+        }
+      }
+
+      // Sort back-to-front
+      projected.sort((a, b) => a.pz - b.pz);
+
+      // Draw atoms
+      projected.forEach(a => {
+        const radius = renderMode === 'space-fill' ? a.r * 1.85 : a.r;
+        const grad = ctx.createRadialGradient(a.px - radius * 0.3, a.py - radius * 0.3, radius * 0.1, a.px, a.py, radius);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.35, a.color);
+        grad.addColorStop(1, '#050b14');
+
+        ctx.beginPath();
+        ctx.arc(a.px, a.py, radius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(a.sym, a.px, a.py);
+      });
+
+      // Labels
+      if (showLabels) {
+        ctx.fillStyle = '#00e676';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`📐 Sudut Ikatan: ${rx.bondAngle}`, 16, 26);
+        ctx.fillText(`📏 Panjang Ikatan: ${rx.bondLength}`, 16, 46);
+      }
+    }
+
+    // ==================== STEP 4: UJI KEHEBATAN ZAT & SERTIFIKAT ====================
+    function loadReactionToStep4(key) {
+      const rx = REACTION_DB[key];
+      document.getElementById('testCompName').textContent = `${rx.formula} (${rx.name})`;
+      document.getElementById('tempSlider').value = 25;
+      document.getElementById('physResult').textContent = '';
+      document.getElementById('phBadge').textContent = 'Klik tombol uji di atas untuk melihat reaksi!';
+      document.getElementById('phBadge').style.background = 'rgba(0,0,0,0.3)';
+      document.getElementById('simScenarioDesc').textContent = rx.simDesc;
+      document.getElementById('simResultText').textContent = '';
+      updatePhysicalTest();
+      updateCertificate();
+    }
+
+    function updatePhysicalTest() {
+      const rx = REACTION_DB[currentReactionKey];
+      const t = parseInt(document.getElementById('tempSlider').value);
+      document.getElementById('tempVal').textContent = t + '°C';
+      let phase = 'Cair 💧';
+      if (t < rx.mp) phase = 'Padat 🧊';
+      else if (t >= rx.bp) phase = 'Gas 💨';
+      document.getElementById('phaseVal').textContent = phase;
+    }
+
+    function runConductivityTest() {
+      const rx = REACTION_DB[currentReactionKey];
+      document.getElementById('physResult').textContent = rx.conductive
+        ? `⚡ Lampu Uji Menyala Terang! ${rx.formula} memiliki ion bebas yang menghantarkan arus listrik.`
+        : `🔌 Lampu Uji Padam. ${rx.formula} adalah molekul kovalen non-elektrolit murni.`;
+    }
+
+    function runSolubilityTest() {
+      const rx = REACTION_DB[currentReactionKey];
+      document.getElementById('physResult').textContent = `💧 Hasil Kelarutan: ${rx.soluble}.`;
+    }
+
+    function runPhTest() {
+      const rx = REACTION_DB[currentReactionKey];
+      const badge = document.getElementById('phBadge');
+      let color = '#00e676';
+      let label = 'Netral';
+      if (rx.ph < 6) { color = '#ff5252'; label = 'Asam'; }
+      else if (rx.ph > 8) { color = '#40c4ff'; label = 'Basa'; }
+      badge.style.background = color;
+      badge.style.color = '#001524';
+      badge.textContent = `🧪 Indikator pH = ${rx.ph} (${label})`;
+    }
+
+    function runFlameTest() {
+      const rx = REACTION_DB[currentReactionKey];
+      const badge = document.getElementById('phBadge');
+      badge.style.background = '#ffab00';
+      badge.style.color = '#001524';
+      badge.textContent = `🔥 Uji Termal: Titik Leleh ${rx.mp}°C | Titik Didih ${rx.bp}°C`;
+    }
+
+    function runRealWorldSim() {
+      const rx = REACTION_DB[currentReactionKey];
+      document.getElementById('simResultText').textContent = rx.simSuccess;
+    }
+
+    function updateCertificate() {
+      const rx = REACTION_DB[currentReactionKey];
+      const player = document.getElementById('playerNameInput').value || 'Ilmuwan Muda';
+      document.getElementById('certContent').innerHTML = `
+        • <strong>Senyawa Hasil Sintesis:</strong> ${rx.name} (${rx.formula})<br/>
+        • <strong>Metode Sintesis:</strong> ${rx.methodName}<br/>
+        • <strong>Disintesis Oleh:</strong> ${player}<br/>
+        • <strong>Rating Pengujian Lab:</strong> ⭐⭐⭐ (Terverifikasi IUPAC)<br/>
+        • <strong>Badge Keahlian:</strong> <span style="color:var(--accent-green); font-weight:800;">${rx.badge}</span>
+      `;
+    }
+
+    function claimFinalReport() {
+      const rx = REACTION_DB[currentReactionKey];
+      unlockedCompounds.add(rx.id);
+      document.getElementById('statComp').textContent = `${unlockedCompounds.size}/8`;
+      addScore(75);
+      alert(`🏅 Selamat! Laporan Senyawa ${rx.formula} & Badge "${rx.badge}" resmi tersimpan di Buku Senyawa (+75 Poin)!`);
+      switchStep(5);
+    }
+
+    // ==================== STEP 5: COMPENDIUM ====================
+    function renderCompendium() {
+      const grid = document.getElementById('compendiumGrid');
+      grid.innerHTML = '';
+      Object.values(REACTION_DB).forEach(rx => {
+        const isUnlocked = unlockedCompounds.has(rx.id);
+        const card = document.createElement('div');
+        card.className = 'comp-card' + (isUnlocked ? ' unlocked' : '');
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:22px; font-weight:800; font-family:monospace; color:${isUnlocked ? 'var(--accent-green)' : 'var(--text-muted)'};">
+              ${isUnlocked ? rx.formula : '???'}
+            </span>
+            <span style="font-size:12px; padding:3px 8px; border-radius:6px; background:rgba(0,0,0,0.3);">
+              ${isUnlocked ? '✅ Terbuka' : '🔒 Terkunci'}
+            </span>
+          </div>
+          <div style="font-weight:700; margin-bottom:4px;">${isUnlocked ? rx.name : `Kombinasi: ${rx.id.replace('+', ' + ')}`}</div>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+            ${isUnlocked ? rx.badge : 'Gabungkan unsur ini di Step 1 & 2 untuk membuka data senyawa.'}
+          </p>
+          <button class="btn btn-outline" style="width:100%; font-size:12px;" onclick="currentReactionKey='${rx.id}'; switchStep(2);">
+            🔬 ${isUnlocked ? 'Mainkan Ulang Reaksi' : 'Sintesis Sekarang'}
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
