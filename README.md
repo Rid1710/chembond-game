@@ -72,3 +72,4 @@ Berbeda dari kuis kimia biasa, **ChemBond** mensimulasikan cara penggabungan yan
 ## 🚀 Cara Menjalankan Secara Lokal
 1. Unduh file `index.html` dari *repository* ini.
 2. Klik dua kali file `index.html` untuk membukanya langsung di browser modern apa pun (Chrome, Edge, Firefox, Safari) tanpa perlu instalasi server tambahan.
+kalau di android : https://rid1710.github.io/chembond-game/
